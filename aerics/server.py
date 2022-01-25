@@ -17,6 +17,7 @@ class Server:
         self.server.bind((self.ip, self.port))
 
         self.clients = {}
+        self.globals = {}
 
     def disconnect(self, connection):
         if not self.destroyed:
@@ -44,7 +45,7 @@ class Server:
 
     def handler(self, connection, address, id):
         if not self.destroyed:
-            self.clients[id] = __main__.on_connection(connection, address, id, self.clients)
+            self.clients[id] = __main__.on_connection(connection, address, id, self.clients, self.globals)
 
         while not self.destroyed:
             data = connection.recv(self.recv_size)
@@ -56,7 +57,7 @@ class Server:
                 if self.pickle:
                     data = pickle.loads(data)
 
-                reply = __main__.on_recv(connection, address, id, self.clients, data)
+                reply = __main__.on_recv(connection, address, id, self.clients, self.globals, data)
 
                 if reply == None:
                     break
@@ -70,4 +71,4 @@ class Server:
             connection.close()
             del self.clients[id]
 
-        __main__.on_disconnection(connection, address, id, self.clients)
+        __main__.on_disconnection(connection, address, id, self.clients, self.globals)

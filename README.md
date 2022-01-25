@@ -14,13 +14,13 @@ pip install Aerics
 ``` python
 from aerics import *
 
-def on_connection(connection, address, id, clients):
+def on_connection(connection, address, id, clients, globals):
     return {"x" : 0, "y" : 0}
 
-def on_disconnection(connection, address, id, clients):
+def on_disconnection(connection, address, id, clients, globals):
     print("Disconnect")
 
-def on_recv(connection, address, id, clients, data):
+def on_recv(connection, address, id, clients, globals, data):
     data = data.split(",")
 
     if data[0] == "move":

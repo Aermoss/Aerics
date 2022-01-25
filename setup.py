@@ -5,7 +5,7 @@ with open("README.md", "r", encoding = "UTF-8") as file:
  
 setup(
     name = "aerics",
-    version = "0.0.1",
+    version = "0.0.2",
     description = "A networking library for multiplayer games.",
     long_description = long_desc,
     long_description_content_type = "text/markdown",
