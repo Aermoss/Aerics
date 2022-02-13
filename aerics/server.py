@@ -2,8 +2,6 @@ import socket
 import threading
 import pickle
 
-import __main__
-
 class Server:
     def __init__(self, ip, port, recv_size = 1024, pickle = True):
         self.ip = ip
@@ -18,6 +16,10 @@ class Server:
 
         self.clients = {}
         self.globals = {}
+        self.functions = {}
+
+    def event(self, func):
+        self.functions[func.__name__] = func
 
     def disconnect(self, connection):
         if not self.destroyed:
@@ -33,6 +35,13 @@ class Server:
         if not self.destroyed:
             self.server.listen(max)
 
+        if "setup" in self.functions:
+            self.functions["setup"](self.globals)
+
+        if "update" in self.functions:
+            thread = threading.Thread(target = self.update_handler, args = [])
+            thread.start()
+
         id = 0
 
         while not self.destroyed:
@@ -43,9 +52,24 @@ class Server:
 
             id += 1
 
+    def update_handler(self):
+        while True:
+            self.functions["update"](self.clients, self.globals)
+
     def handler(self, connection, address, id):
         if not self.destroyed:
-            self.clients[id] = __main__.on_connection(connection, address, id, self.clients, self.globals)
+            if "on_connection" in self.functions:
+                data = self.functions["on_connection"](connection, address, id, self.clients, self.globals)
+
+                if data == None:
+                    self.clients[id] = {}
+
+                else:
+                    self.clients[id] = data
+
+            else:
+                print("Warning: server does not have any on_connection functions")
+                self.clients[id] = {}
 
         while not self.destroyed:
             data = connection.recv(self.recv_size)
@@ -57,7 +81,13 @@ class Server:
                 if self.pickle:
                     data = pickle.loads(data)
 
-                reply = __main__.on_recv(connection, address, id, self.clients, self.globals, data)
+                reply = None
+
+                if "on_recv" in self.functions:
+                    reply = self.functions["on_recv"](connection, address, id, self.clients, self.globals, data)
+
+                else:
+                    print("Warning: server does not have any on_recv functions")
 
                 if reply == None:
                     break
@@ -71,4 +101,5 @@ class Server:
             connection.close()
             del self.clients[id]
 
-        __main__.on_disconnection(connection, address, id, self.clients, self.globals)
+        if "on_disconnection" in self.functions:
+            reply = self.functions["on_disconnection"](connection, address, id, self.clients, self.globals)

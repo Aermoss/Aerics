@@ -14,12 +14,27 @@ pip install Aerics
 ``` python
 from aerics import *
 
+server = Server("localhost", 5656)
+
+@server.event
+def setup():
+    pass
+
+@server.event
+def update():
+    pass
+
+@server.event
 def on_connection(connection, address, id, clients, globals):
+    print("New connection")
+
     return {"x" : 0, "y" : 0}
 
+@server.event
 def on_disconnection(connection, address, id, clients, globals):
-    print("Disconnect")
+    print(f"Client {id} disconnected")
 
+@server.event
 def on_recv(connection, address, id, clients, globals, data):
     data = data.split(",")
 
@@ -31,9 +46,7 @@ def on_recv(connection, address, id, clients, globals, data):
         server.disconnect(connection)
         return None
 
-if __name__ == "__main__":
-    server = Server("localhost", 5656)
-    server.listen()
+server.listen()
 ```
 
 # Creating a client
