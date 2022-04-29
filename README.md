@@ -17,12 +17,12 @@ from aerics import *
 server = Server("localhost", 5656)
 
 @server.event
-def setup():
+def setup(globals):
     pass
 
-@server.event
-def update():
-    pass
+# @server.event
+# def update():
+#     pass
 
 @server.event
 def on_connection(connection, address, id, clients, globals):
@@ -54,14 +54,11 @@ server.listen()
 from aerforge import *
 from aerics import *
 
-def update():
-    client.send(f"move,{player.x},{player.y}")
-    players = client.recv()
+import sys
 
-    for i in players:
-        forge.draw(width = 50, height = 100, x = int(players[i]["x"]), y = int(players[i]["y"]))
+def main(argv):
+    global forge, client, player
 
-if __name__ == "__main__":
     forge = Forge()
     
     client = Client("localhost", 5656)
@@ -70,5 +67,18 @@ if __name__ == "__main__":
     player = prefabs.TopViewController(forge)
     player.visible = False
 
+    @forge.event
+    def update():
+        client.send(f"move,{player.x},{player.y}")
+        players = client.recv()
+
+        for i in players:
+            forge.draw(width = 50, height = 100, x = int(players[i]["x"]), y = int(players[i]["y"]))
+
     forge.run()
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
 ```
