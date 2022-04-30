@@ -12,43 +12,47 @@ pip install Aerics
 ## Examples
 # Creating a server
 ``` python
-import aerics
+import aerics, sys
 
-server = aerics.Server("localhost", 5656)
+def main(argv):
+    server = aerics.Server("localhost", 5656)
 
-@server.event
-def setup(globals):
-    pass
+    @server.event
+    def setup(globals):
+        pass
 
-# @server.event
-# def update():
-#     pass
+    # @server.event
+    # def update():
+    #     pass
 
-@server.event
-def on_connection(connection, address, id, clients, globals):
-    print("New connection")
-    return {"x" : 0, "y" : 0}
+    @server.event
+    def on_connection(connection, address, id, clients, globals):
+        print("New connection")
+        return {"x" : 0, "y" : 0}
 
-@server.event
-def on_disconnection(connection, address, id, clients, globals):
-    print(f"Client {id} disconnected")
+    @server.event
+    def on_disconnection(connection, address, id, clients, globals):
+        print(f"Client {id} disconnected")
 
-@server.event
-def on_recv(connection, address, id, clients, globals, data):
-    data = data.split(",")
+    @server.event
+    def on_recv(connection, address, id, clients, globals, data):
+        data = data.split(",")
 
-    if data[0] == "move":
-        clients[id]["x"], clients[id]["y"] = int(data[1]), int(data[2])
-        return clients
+        if data[0] == "move":
+            clients[id]["x"], clients[id]["y"] = int(data[1]), int(data[2])
+            return clients
 
-    if data[0] == "get_id":
-        return id
+        if data[0] == "get_id":
+            return id
 
-    if data[0] == "close":
-        server.disconnect(connection)
-        return None
+        if data[0] == "close":
+            server.disconnect(connection)
+            return None
 
-server.listen()
+    server.listen()
+    
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
 ```
 
 # Creating a client
