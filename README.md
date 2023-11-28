@@ -1,5 +1,5 @@
 # Aerics
-A networking library for multiplayer games.
+A networking library written Python for online games.
 
 ## Getting Started
 1) Install Python
